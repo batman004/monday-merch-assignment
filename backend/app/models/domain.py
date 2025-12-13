@@ -1,0 +1,95 @@
+"""SQLAlchemy domain models."""
+from datetime import datetime
+from decimal import Decimal
+from typing import Optional
+
+from sqlalchemy import Column, Integer, String, Text, Numeric, ForeignKey, DateTime, CheckConstraint
+from sqlalchemy.orm import relationship
+
+from app.core.database import Base
+
+
+class Category(Base):
+    """Product category model."""
+    __tablename__ = "categories"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), unique=True, nullable=False, index=True)
+    slug = Column(String(100), unique=True, nullable=False, index=True)
+    
+    # Relationships
+    products = relationship("Product", back_populates="category", cascade="all, delete-orphan")
+    
+    def __repr__(self):
+        return f"<Category(id={self.id}, name='{self.name}')>"
+
+
+class Product(Base):
+    """Product model."""
+    __tablename__ = "products"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(200), nullable=False, index=True)
+    description = Column(Text, nullable=True)
+    price = Column(Numeric(10, 2), nullable=False)  # Using Decimal for precision
+    inventory = Column(Integer, nullable=False, default=0)
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=False, index=True)
+    
+    # Optional timestamps
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    
+    # Relationships
+    category = relationship("Category", back_populates="products")
+    order_items = relationship("OrderItem", back_populates="product", cascade="all, delete-orphan")
+    
+    # Constraints
+    __table_args__ = (
+        CheckConstraint('inventory >= 0', name='check_inventory_non_negative'),
+        CheckConstraint('price >= 0', name='check_price_non_negative'),
+    )
+    
+    def __repr__(self):
+        return f"<Product(id={self.id}, title='{self.title}', price={self.price})>"
+
+
+class Order(Base):
+    """Order model."""
+    __tablename__ = "orders"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    # TODO: Add customer/user reference if needed
+    status = Column(String(50), nullable=False, default="PENDING", index=True)  # PENDING, COMPLETED, CANCELLED
+    total_amount = Column(Numeric(10, 2), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    
+    # Relationships
+    order_items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
+    
+    def __repr__(self):
+        return f"<Order(id={self.id}, status='{self.status}', total={self.total_amount})>"
+
+
+class OrderItem(Base):
+    """Order item model (junction table for Order-Product relationship)."""
+    __tablename__ = "order_items"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable=False, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False, index=True)
+    quantity = Column(Integer, nullable=False)
+    price_at_purchase = Column(Numeric(10, 2), nullable=False)  # Snapshot of price at time of purchase
+    
+    # Relationships
+    order = relationship("Order", back_populates="order_items")
+    product = relationship("Product", back_populates="order_items")
+    
+    # Constraints
+    __table_args__ = (
+        CheckConstraint('quantity > 0', name='check_quantity_positive'),
+    )
+    
+    def __repr__(self):
+        return f"<OrderItem(id={self.id}, order_id={self.order_id}, product_id={self.product_id}, quantity={self.quantity})>"
+
