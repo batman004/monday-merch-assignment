@@ -1,0 +1,96 @@
+{
+  "categories": [
+    {"name": "Electronics", "slug": "electronics"},
+    {"name": "Clothing", "slug": "clothing"},
+    {"name": "Books", "slug": "books"},
+    {"name": "Home & Garden", "slug": "home-garden"},
+    {"name": "Sports & Outdoors", "slug": "sports-outdoors"}
+  ],
+  "products": [
+    {
+      "title": "Wireless Bluetooth Headphones",
+      "description": "High-quality noise-cancelling wireless headphones with 30-hour battery life.",
+      "price": "129.99",
+      "inventory": 50,
+      "category": "Electronics"
+    },
+    {
+      "title": "Smartphone 128GB",
+      "description": "Latest generation smartphone with advanced camera and fast processor.",
+      "price": "699.99",
+      "inventory": 25,
+      "category": "Electronics"
+    },
+    {
+      "title": "Laptop Stand Aluminum",
+      "description": "Ergonomic aluminum laptop stand for better posture and cooling.",
+      "price": "49.99",
+      "inventory": 100,
+      "category": "Electronics"
+    },
+    {
+      "title": "Cotton T-Shirt",
+      "description": "Comfortable 100% cotton t-shirt, available in multiple colors.",
+      "price": "19.99",
+      "inventory": 200,
+      "category": "Clothing"
+    },
+    {
+      "title": "Denim Jeans",
+      "description": "Classic fit denim jeans, durable and stylish.",
+      "price": "59.99",
+      "inventory": 75,
+      "category": "Clothing"
+    },
+    {
+      "title": "Winter Jacket",
+      "description": "Warm and waterproof winter jacket, perfect for cold weather.",
+      "price": "149.99",
+      "inventory": 40,
+      "category": "Clothing"
+    },
+    {
+      "title": "Python Programming Guide",
+      "description": "Comprehensive guide to Python programming for beginners and advanced users.",
+      "price": "34.99",
+      "inventory": 150,
+      "category": "Books"
+    },
+    {
+      "title": "Web Development Handbook",
+      "description": "Complete handbook covering modern web development technologies.",
+      "price": "42.99",
+      "inventory": 80,
+      "category": "Books"
+    },
+    {
+      "title": "Garden Tool Set",
+      "description": "Complete set of essential gardening tools for your backyard.",
+      "price": "79.99",
+      "inventory": 60,
+      "category": "Home & Garden"
+    },
+    {
+      "title": "Indoor Plant Pot Set",
+      "description": "Beautiful ceramic plant pots, set of 3 in various sizes.",
+      "price": "29.99",
+      "inventory": 120,
+      "category": "Home & Garden"
+    },
+    {
+      "title": "Yoga Mat Premium",
+      "description": "Non-slip premium yoga mat with carrying strap.",
+      "price": "39.99",
+      "inventory": 90,
+      "category": "Sports & Outdoors"
+    },
+    {
+      "title": "Running Shoes",
+      "description": "Lightweight running shoes with excellent cushioning and support.",
+      "price": "89.99",
+      "inventory": 55,
+      "category": "Sports & Outdoors"
+    }
+  ]
+}
+

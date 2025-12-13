@@ -5,6 +5,7 @@ from fastapi import FastAPI
 
 from app.core.config import settings
 from app.core.database import engine, Base
+from app.utils.seed import seed_database_if_empty
 from app.api.routers import router
 
 
@@ -14,6 +15,9 @@ async def lifespan(app: FastAPI):
     # Startup: Create database tables
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    
+    # Seed database if empty
+    await seed_database_if_empty()
     
     yield
     
