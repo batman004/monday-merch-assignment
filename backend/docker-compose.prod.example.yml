@@ -1,0 +1,66 @@
+# Production Docker Compose Example
+# This file demonstrates best practices for managing secrets in production
+# DO NOT use this file directly - it's a reference for production setup
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: monday_merch_db
+    environment:
+      # In production, use Docker secrets or external secret management
+      # Option 1: Environment variables from .env file (not recommended for production)
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}  # Should come from secret manager
+      POSTGRES_DB: ${POSTGRES_DB}
+    # Option 2: Use Docker secrets (recommended for Docker Swarm)
+    # secrets:
+    #   - postgres_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # Remove port mapping in production (use internal network only)
+    # ports:
+    #   - "5432:5432"
+    networks:
+      - internal
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: monday_merch_api
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      SECRET_KEY: ${SECRET_KEY}  # Should come from secret manager
+      DEBUG: "false"  # Always false in production
+    # Option 2: Use Docker secrets
+    # secrets:
+    #   - secret_key
+    #   - database_password
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - internal
+    # In production, use reverse proxy (nginx/traefik) instead of exposing port directly
+    # ports:
+    #   - "8000:8000"
+
+volumes:
+  postgres_data:
+
+networks:
+  internal:
+    driver: bridge
+
+# Docker secrets (for Docker Swarm mode)
+# secrets:
+#   postgres_password:
+#     external: true
+#   secret_key:
+#     external: true

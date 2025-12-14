@@ -35,14 +35,25 @@ async def get_current_user(
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-        user_id: Optional[int] = payload.get("sub")
-        if user_id is None:
+        user_id_str: Optional[str] = payload.get("sub")
+        if user_id_str is None:
             logger.warning("Invalid JWT token: missing user ID")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid authentication credentials",
                 headers={"WWW-Authenticate": "Bearer"},
             )
+
+        # Convert string user_id to integer (JWT stores it as string)
+        try:
+            user_id = int(user_id_str)
+        except (ValueError, TypeError) as e:
+            logger.warning(f"Invalid user ID format in token: {user_id_str}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authentication credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            ) from e
 
         result = await db.execute(select(User).where(User.id == user_id))
         user = result.scalar_one_or_none()

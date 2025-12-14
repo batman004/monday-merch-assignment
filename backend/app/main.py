@@ -9,6 +9,9 @@ from app.core.exceptions import database_exception_handler, general_exception_ha
 from app.core.logging_config import logger
 from app.utils.seed import seed_database_if_empty
 from fastapi import FastAPI
+from fastapi import status as http_status
+from fastapi.responses import JSONResponse
+from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 
@@ -61,10 +64,44 @@ async def root():
     return {"message": "Hello from the other side! check swagger at /docs"}
 
 
+async def check_database_health() -> tuple[bool, str]:
+    """Check database connectivity."""
+    try:
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
+        return True, "connected"
+    except Exception as e:
+        logger.error(f"Database health check failed: {e}")
+        return False, str(e)
+
+
 @app.get("/health")
 async def health_check():
-    """Health check endpoint."""
-    return {"status": "ok"}
+    """
+    Health check endpoint that verifies API and database connectivity.
+
+    Returns:
+        - 200: Both API and database are healthy
+        - 503: Database is unhealthy
+    """
+    db_healthy, db_message = await check_database_health()
+
+    if not db_healthy:
+        return JSONResponse(
+            status_code=http_status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={
+                "status": "unhealthy",
+                "api": "ok",
+                "database": "unhealthy",
+                "database_error": db_message,
+            },
+        )
+
+    return {
+        "status": "healthy",
+        "api": "ok",
+        "database": "connected",
+    }
 
 
 if __name__ == "__main__":

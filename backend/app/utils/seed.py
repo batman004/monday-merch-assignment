@@ -34,8 +34,9 @@ async def seed_database_if_empty():
 
             # Load seed data from JSON
             seed_data = load_seed_data()
-            categories_data = seed_data["categories"]
-            products_data = seed_data["products"]
+            categories_data = seed_data.get("categories", [])
+            products_data = seed_data.get("products", [])
+            users_data = seed_data.get("users", [])
 
             # Seed categories
             categories = {}
@@ -57,28 +58,38 @@ async def seed_database_if_empty():
                 product = Product(**product_data, category_id=category.id)
                 session.add(product)
 
-            # Seed a test user
-            try:
-                test_user = User(
-                    email="test@example.com",
-                    password_hash=get_password_hash("testpassword123"),
-                    first_name="Test",
-                    last_name="User",
-                    is_active=True,
-                )
-                session.add(test_user)
-                logger.info("Test user created successfully")
-            except Exception as e:
-                logger.warning(f"Failed to create test user: {e}")
-                logger.warning("Continuing without test user...")
+            # Seed users
+            users_created = 0
+            user_credentials = []
+            for user_data in users_data:
+                try:
+                    # Make a copy to preserve original data for logging
+                    user_data_copy = user_data.copy()
+                    # Extract password and hash it
+                    password = user_data.pop("password")
+                    user_data["password_hash"] = get_password_hash(password)
+
+                    # Create user with all required fields
+                    user = User(**user_data)
+                    session.add(user)
+                    users_created += 1
+                    user_credentials.append((user_data_copy["email"], password))
+                    logger.debug(f"User created: {user_data_copy['email']}")
+                except Exception as e:
+                    logger.warning(
+                        f"Failed to create user {user_data.get('email', 'unknown')}: {e}"
+                    )
+                    logger.warning("Continuing with remaining users...")
 
             await session.commit()
             logger.info(
-                f"Seeded database with {len(categories_data)} categories and {len(products_data)} products."
+                f"Seeded database with {len(categories_data)} categories, "
+                f"{len(products_data)} products, and {users_created} users."
             )
-            logger.info(
-                "Test user credentials: email=test@example.com, password=testpassword123"
-            )
+            if user_credentials:
+                logger.info("Sample user credentials:")
+                for email, password in user_credentials:
+                    logger.info(f"  - {email} / {password}")
     except Exception as e:
         logger.error(f"Error seeding database: {e}")
         logger.warning("Application will continue, but database may be incomplete.")
