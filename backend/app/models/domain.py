@@ -27,14 +27,14 @@ class User(Base):
     password_hash = Column(String(255), nullable=False)  # Hashed password
     first_name = Column(String(100), nullable=False)
     last_name = Column(String(100), nullable=False)
-    phone = Column(String(20), nullable=True)
+    phone = Column(String(20), nullable=False)
 
     # Address fields
-    street_address = Column(String(255), nullable=True)
-    city = Column(String(100), nullable=True)
-    state = Column(String(100), nullable=True)
-    postal_code = Column(String(20), nullable=True)
-    country = Column(String(100), nullable=True, default="USA")
+    street_address = Column(String(255), nullable=False)
+    city = Column(String(100), nullable=False)
+    state = Column(String(100), nullable=False)
+    postal_code = Column(String(20), nullable=False)
+    country = Column(String(100), nullable=False)
 
     # Status
     is_active = Column(Boolean, default=True, nullable=False)

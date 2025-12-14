@@ -12,6 +12,7 @@ from app.api.serializers import (
     TokenResponse,
 )
 from app.core.config import settings
+from app.core.logging_config import logger
 from app.core.security import create_access_token, verify_password
 from app.models.domain import User
 from app.services.product_service import get_product_list
@@ -34,6 +35,10 @@ async def fetch_products(
     Returns:
         ProductListResponse with paginated results
     """
+    logger.debug(
+        f"Fetching products with filters: search={params.search}, category={params.category}, page={params.page}, page_size={params.page_size}"
+    )
+
     # Convert Pydantic model to dict for service layer
     filter_params: Dict[str, Any] = {
         "search": params.search,
@@ -47,6 +52,8 @@ async def fetch_products(
 
     # Calculate total pages
     total_pages = ceil(total_count / params.page_size) if total_count > 0 else 0
+
+    logger.info(f"Fetched {len(products)} products (total: {total_count})")
 
     # Convert to response models
     product_responses = [
@@ -79,11 +86,16 @@ async def authenticate_user(
     Raises:
         HTTPException: If authentication fails
     """
+    logger.info(f"Authentication attempt for email: {login_data.email}")
+
     # Find user by email
     result = await db.execute(select(User).where(User.email == login_data.email))
     user = result.scalar_one_or_none()
 
     if user is None:
+        logger.warning(
+            f"Authentication failed: user not found for email {login_data.email}"
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
@@ -91,6 +103,7 @@ async def authenticate_user(
 
     # Verify password
     if not verify_password(login_data.password, user.password_hash):
+        logger.warning(f"Authentication failed: invalid password for user {user.id}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
@@ -98,6 +111,7 @@ async def authenticate_user(
 
     # Check if user is active
     if not user.is_active:
+        logger.warning(f"Authentication failed: inactive user {user.id}")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User account is inactive",
@@ -109,4 +123,5 @@ async def authenticate_user(
         data={"sub": str(user.id)}, expires_delta=access_token_expires
     )
 
+    logger.info(f"Authentication successful for user {user.id}")
     return TokenResponse(access_token=access_token, token_type="bearer")
