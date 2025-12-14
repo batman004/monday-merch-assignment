@@ -1,5 +1,29 @@
 # Monday Merch - E-commerce API Assignment
 
+## Table of Contents
+
+- [Task Overview](#task-overview)
+- [Implemented Solution](#implemented-solution)
+  - [Architecture](#architecture)
+  - [System Design](#system-design)
+  - [Database Schema](#database-schema)
+  - [ER Diagram](#er-diagram)
+  - [Features Implemented](#features-implemented)
+  - [Technical Stack](#technical-stack)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Local Development](#local-development-sqlite)
+  - [Frontend Setup](#frontend-setup)
+  - [Production Setup](#production-setup-docker-with-postgresql)
+  - [Using Makefile](#using-makefile-optional)
+- [API Endpoints](#api-endpoints)
+- [Environment Variables](#environment-variables)
+- [Database](#database)
+- [Project Structure](#project-structure)
+- [Testing the API](#testing-the-api)
+- [Development Tools](#development-tools)
+- [Design Decisions](#design-decisions)
+
 ## Task Overview
 
 This project implements a full-stack e-commerce platform with a RESTful API backend and React frontend. The API provides product listing functionality with search, filtering, and pagination capabilities, along with JWT-based authentication. The frontend allows users to browse products, manage a shopping cart, and place orders.
@@ -26,7 +50,21 @@ The solution follows a **Layered Architecture** pattern with strict separation o
 - **Services Layer**: Contains pure business logic and database queries
 - **Models Layer**: SQLAlchemy domain models and Pydantic schemas
 
+### System Design
+
+The backend is built using a layered architecture with clear separation between interface, business logic, and data layers:
+
+![System Design Diagram](docs/images/HLD.png)
+
 ### Database Schema
+
+The schema includes five main tables with well-defined relationships:
+
+### ER Diagram
+
+The Entity-Relationship diagram shows the database schema with all entities, attributes, and relationships:
+
+![ER Diagram](docs/images/ERD.png)
 
 The schema includes five main tables:
 
