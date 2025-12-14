@@ -124,6 +124,26 @@ class OrderItemResponse(BaseModel):
         from_attributes = True
 
 
+class OrderItemRequest(BaseModel):
+    """Order item request schema."""
+
+    product_id: int = Field(..., description="Product ID", gt=0)
+    quantity: int = Field(..., description="Quantity", gt=0)
+
+
+class OrderRequest(BaseModel):
+    """Order creation request schema."""
+
+    items: list[OrderItemRequest] = Field(..., min_length=1, description="Order items")
+    shipping_street: Optional[str] = Field(None, description="Shipping street address")
+    shipping_city: Optional[str] = Field(None, description="Shipping city")
+    shipping_state: Optional[str] = Field(None, description="Shipping state")
+    shipping_postal_code: Optional[str] = Field(
+        None, description="Shipping postal code"
+    )
+    shipping_country: Optional[str] = Field(None, description="Shipping country")
+
+
 class OrderResponse(BaseModel):
     """Order response schema."""
 

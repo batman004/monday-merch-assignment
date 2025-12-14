@@ -6,6 +6,8 @@ from typing import Any, Dict
 
 from app.api.serializers import (
     LoginRequest,
+    OrderRequest,
+    OrderResponse,
     ProductListResponse,
     ProductQuery,
     ProductResponse,
@@ -14,11 +16,13 @@ from app.api.serializers import (
 from app.core.config import settings
 from app.core.logging_config import logger
 from app.core.security import create_access_token, verify_password
-from app.models.domain import User
+from app.models.domain import Order, User
+from app.services.order_service import create_order, get_user_orders
 from app.services.product_service import get_product_list
 from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 
 async def fetch_products(
@@ -125,3 +129,96 @@ async def authenticate_user(
 
     logger.info(f"Authentication successful for user {user.id}")
     return TokenResponse(access_token=access_token, token_type="bearer")
+
+
+async def create_user_order(
+    db: AsyncSession,
+    user: User,
+    order_data: OrderRequest,
+) -> OrderResponse:
+    """
+    Create an order for the current user.
+
+    Args:
+        db: Database session
+        user: Current authenticated user
+        order_data: Order creation data
+
+    Returns:
+        OrderResponse with created order
+
+    Raises:
+        HTTPException: If order creation fails
+    """
+    logger.info(f"Creating order for user {user.id}")
+
+    try:
+        # Prepare items for service
+        items = [
+            {"product_id": item.product_id, "quantity": item.quantity}
+            for item in order_data.items
+        ]
+
+        # Prepare shipping address (use user's address if not provided)
+        shipping_address = {
+            "shipping_street": order_data.shipping_street or user.street_address,
+            "shipping_city": order_data.shipping_city or user.city,
+            "shipping_state": order_data.shipping_state or user.state,
+            "shipping_postal_code": order_data.shipping_postal_code or user.postal_code,
+            "shipping_country": order_data.shipping_country or user.country or "USA",
+        }
+
+        # Create order via service
+        order, _ = await create_order(db, user, items, shipping_address)
+        await db.commit()
+
+        # Reload order with relationships
+        from app.models.domain import OrderItem, Product
+
+        result = await db.execute(
+            select(Order)
+            .where(Order.id == order.id)
+            .options(
+                selectinload(Order.order_items)
+                .selectinload(OrderItem.product)
+                .selectinload(Product.category)
+            )
+        )
+        order = result.scalar_one()
+
+        logger.info(f"Order {order.id} created successfully for user {user.id}")
+        return OrderResponse.model_validate(order)
+
+    except ValueError as e:
+        logger.warning(f"Order creation failed: {e}")
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        ) from e
+    except Exception as e:
+        logger.error(f"Unexpected error creating order: {e}", exc_info=True)
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while creating the order",
+        ) from e
+
+
+async def fetch_user_orders(
+    db: AsyncSession,
+    user: User,
+) -> list[OrderResponse]:
+    """
+    Fetch all orders for the current user.
+
+    Args:
+        db: Database session
+        user: Current authenticated user
+
+    Returns:
+        List of OrderResponse
+    """
+    logger.debug(f"Fetching orders for user {user.id}")
+    orders = await get_user_orders(db, user.id)
+    return [OrderResponse.model_validate(order) for order in orders]

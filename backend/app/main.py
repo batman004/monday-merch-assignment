@@ -10,6 +10,7 @@ from app.core.logging_config import logger
 from app.utils.seed import seed_database_if_empty
 from fastapi import FastAPI
 from fastapi import status as http_status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
@@ -48,6 +49,20 @@ app = FastAPI(
     title=settings.app_name,
     debug=settings.debug,
     lifespan=lifespan,
+)
+
+# Configure CORS
+# Parse CORS origins from settings (comma-separated string)
+cors_origins = [
+    origin.strip() for origin in settings.cors_origins.split(",") if origin.strip()
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Register exception handlers
