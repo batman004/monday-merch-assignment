@@ -1,8 +1,8 @@
 """Database configuration and session management."""
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy.orm import declarative_base
 
 from app.core.config import settings
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import declarative_base
 
 # Create async engine
 engine = create_async_engine(
@@ -29,4 +29,3 @@ async def get_db() -> AsyncSession:
             yield session
         finally:
             await session.close()
-

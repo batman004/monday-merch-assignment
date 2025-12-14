@@ -1,10 +1,11 @@
 """API controllers - HTTP orchestration layer."""
-from math import ceil
-from typing import Dict, Any
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.services.product_service import get_product_list
+from math import ceil
+from typing import Any, Dict
+
 from app.api.serializers import ProductListResponse, ProductQuery, ProductResponse
+from app.services.product_service import get_product_list
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def fetch_products(
