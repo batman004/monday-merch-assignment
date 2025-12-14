@@ -5,6 +5,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from app.core.database import AsyncSessionLocal
+from app.core.logging_config import logger
 from app.core.security import get_password_hash
 from app.models.domain import Category, Product, User
 from sqlalchemy import select
@@ -26,10 +27,10 @@ async def seed_database_if_empty():
             existing_product = result.scalar_one_or_none()
 
             if existing_product:
-                print("Database already contains data, skipping seed.")
+                logger.info("Database already contains data, skipping seed.")
                 return
 
-            print("Database is empty, seeding with sample data...")
+            logger.info("Database is empty, seeding with sample data...")
 
             # Load seed data from JSON
             seed_data = load_seed_data()
@@ -66,17 +67,18 @@ async def seed_database_if_empty():
                     is_active=True,
                 )
                 session.add(test_user)
+                logger.info("Test user created successfully")
             except Exception as e:
-                print(f"Warning: Failed to create test user: {e}")
-                print("Continuing without test user...")
+                logger.warning(f"Failed to create test user: {e}")
+                logger.warning("Continuing without test user...")
 
             await session.commit()
-            print(
+            logger.info(
                 f"Seeded database with {len(categories_data)} categories and {len(products_data)} products."
             )
-            print(
+            logger.info(
                 "Test user credentials: email=test@example.com, password=testpassword123"
             )
     except Exception as e:
-        print(f"Error seeding database: {e}")
-        print("Application will continue, but database may be incomplete.")
+        logger.error(f"Error seeding database: {e}")
+        logger.warning("Application will continue, but database may be incomplete.")

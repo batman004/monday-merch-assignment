@@ -1,5 +1,6 @@
 """Custom exception handlers."""
 
+from app.core.logging_config import logger
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
@@ -16,6 +17,7 @@ async def database_exception_handler(
         "no such column" in error_message.lower()
         or "no such table" in error_message.lower()
     ):
+        logger.error(f"Database schema error: {error_message}")
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={
@@ -25,6 +27,7 @@ async def database_exception_handler(
         )
 
     # Generic database error
+    logger.error(f"Database error: {error_message}", exc_info=True)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
@@ -36,6 +39,7 @@ async def database_exception_handler(
 
 async def general_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """Handle general unhandled exceptions."""
+    logger.error(f"Unhandled exception: {exc}", exc_info=True)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={

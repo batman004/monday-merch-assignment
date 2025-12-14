@@ -6,6 +6,7 @@ from app.api.routers import router
 from app.core.config import settings
 from app.core.database import Base, engine
 from app.core.exceptions import database_exception_handler, general_exception_handler
+from app.core.logging_config import logger
 from app.utils.seed import seed_database_if_empty
 from fastapi import FastAPI
 from sqlalchemy.exc import SQLAlchemyError
@@ -14,24 +15,29 @@ from sqlalchemy.exc import SQLAlchemyError
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifespan context manager for startup/shutdown events."""
+    logger.info("Starting application...")
+
     # Startup: Create database tables
     try:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+        logger.info("Database tables created successfully")
     except Exception as e:
-        print(f"Warning: Error creating database tables: {e}")
-        print("Application will continue, but database may be incomplete.")
+        logger.error(f"Error creating database tables: {e}")
+        logger.warning("Application will continue, but database may be incomplete.")
 
     # Seed database if empty
     try:
         await seed_database_if_empty()
     except Exception as e:
-        print(f"Warning: Error seeding database: {e}")
-        print("Application will continue, but seed data may be missing.")
+        logger.error(f"Error seeding database: {e}")
+        logger.warning("Application will continue, but seed data may be missing.")
 
+    logger.info("Application startup complete")
     yield
 
-    # Shutdown: (if needed, add cleanup here)
+    # Shutdown
+    logger.info("Shutting down application...")
     pass
 
 

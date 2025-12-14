@@ -9,6 +9,7 @@ from app.api.serializers import (
     ProductQuery,
     TokenResponse,
 )
+from app.core.logging_config import logger
 from app.models.domain import User
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -37,6 +38,7 @@ async def login(
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(f"Unexpected error in login endpoint: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred during authentication: {str(e)}",
@@ -58,9 +60,11 @@ async def get_products(
     - page: Page number (default: 1)
     - page_size: Items per page (default: 10, max: 100)
     """
+    logger.info(f"Products endpoint accessed by user {current_user.id}")
     try:
         return await fetch_products(db, query_params)
     except Exception as e:
+        logger.error(f"Unexpected error in products endpoint: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred while fetching products: {str(e)}",
