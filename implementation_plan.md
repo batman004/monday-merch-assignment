@@ -96,7 +96,7 @@ backend/
       * Handle empty states or errors (e.g., raise `HTTPException` if specific constraints fail).
       * Return the list of data to the router.
 
-**C. (`api/routers.py`)** 
+**C. (`api/routers.py`)**
 
   * Define `GET /products`.
   * Inject `db` session.
