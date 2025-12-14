@@ -2,7 +2,7 @@
 
 ## Task Overview
 
-This project implements a RESTful API for an e-commerce platform as part of a coding assignment. The API provides product listing functionality with search, filtering, and pagination capabilities, along with JWT-based authentication to protect endpoints.
+This project implements a full-stack e-commerce platform with a RESTful API backend and React frontend. The API provides product listing functionality with search, filtering, and pagination capabilities, along with JWT-based authentication. The frontend allows users to browse products, manage a shopping cart, and place orders.
 
 ### Requirements
 
@@ -54,7 +54,20 @@ The schema includes five main tables:
    - Database connectivity check
    - Returns 503 if database is unavailable
 
-4. **Additional Features**
+4. **Order Management** (`POST /api/v1/orders`, `GET /api/v1/orders`)
+   - Create orders with multiple items
+   - Automatic inventory management
+   - Order history viewing
+   - Shipping address handling
+
+5. **Frontend Application**
+   - User login and authentication
+   - Product browsing with search and filters
+   - Shopping cart functionality
+   - Order creation and viewing
+   - Responsive design
+
+6. **Additional Features**
    - Automatic database seeding on startup
    - Comprehensive exception handling
    - Structured logging with loguru
@@ -63,6 +76,7 @@ The schema includes five main tables:
 
 ### Technical Stack
 
+**Backend:**
 - **Framework**: FastAPI
 - **Database**: SQLite (local dev) / PostgreSQL (Docker/production)
 - **ORM**: SQLAlchemy (Async)
@@ -71,13 +85,24 @@ The schema includes five main tables:
 - **Logging**: Loguru
 - **Containerization**: Docker & Docker Compose
 
+**Frontend:**
+- **Framework**: React with Vite
+- **Routing**: React Router
+- **State Management**: React Context API
+- **HTTP Client**: Axios
+
 ## Getting Started
 
 ### Prerequisites
 
+**Backend:**
 - Python 3.11+
 - Docker & Docker Compose (for production setup)
 - pip
+
+**Frontend:**
+- Node.js 18+
+- npm or yarn
 
 ### Local Development (SQLite)
 
@@ -101,6 +126,27 @@ The schema includes five main tables:
    - API: http://localhost:8000
    - Interactive Docs: http://localhost:8000/docs
    - Health Check: http://localhost:8000/health
+
+### Frontend Setup
+
+1. **Navigate to frontend directory:**
+   ```bash
+   cd frontend
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Start development server:**
+   ```bash
+   npm run dev
+   ```
+
+4. **Access the frontend:**
+   - Frontend: http://localhost:5173
+   - Make sure the backend API is running on http://localhost:8000
 
 4. **Test credentials:**
    The database is automatically seeded with the following test users:
@@ -267,21 +313,28 @@ For Docker, environment variables can be set in `docker-compose.yml` or passed v
 ## Project Structure
 
 ```
-backend/
-├── app/
-│   ├── api/              # API layer (routers, controllers, serializers)
-│   ├── core/             # Configuration, database, security, logging
-│   ├── models/           # SQLAlchemy domain models
-│   ├── services/         # Business logic layer
-│   ├── utils/            # Utilities (pagination, seeding)
-│   └── main.py           # Application entry point
-├── Dockerfile            # Container definition
-├── docker-compose.yml    # Docker services orchestration (local dev)
-├── docker-compose.prod.example.yml  # Production example
-├── .env.example          # Environment variables template
-├── SECRETS.md            # Secret management guide
-├── requirements.txt      # Python dependencies
-└── Makefile             # Convenience commands
+.
+├── backend/              # FastAPI backend
+│   ├── app/
+│   │   ├── api/         # API layer (routers, controllers, serializers)
+│   │   ├── core/        # Configuration, database, security, logging
+│   │   ├── models/      # SQLAlchemy domain models
+│   │   ├── services/    # Business logic layer
+│   │   ├── utils/       # Utilities (pagination, seeding)
+│   │   └── main.py      # Application entry point
+│   ├── Dockerfile
+│   ├── docker-compose.yml
+│   ├── requirements.txt
+│   └── ...
+├── frontend/             # React frontend
+│   ├── src/
+│   │   ├── components/  # React components
+│   │   ├── contexts/    # React contexts (Auth, Cart)
+│   │   ├── services/    # API services
+│   │   └── App.jsx      # Main app
+│   ├── package.json
+│   └── ...
+└── README.md
 ```
 
 ## Testing the API
